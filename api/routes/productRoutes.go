@@ -2,17 +2,18 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"golang-ecommerce-practice/package/auth"
 	"golang-ecommerce-practice/package/entities"
 	"golang-ecommerce-practice/package/products"
 	"golang-ecommerce-practice/zapLog"
 )
 
-func ProductRouter(app fiber.Router, service products.RepoServiceProducts) {
+func ProductRouter(app fiber.Router, service products.RepoServiceProducts, serveAuth auth.RepoServiceAuth) {
 	app.Get("/", getProducts(service))
-	app.Get("/:id", getProduct(service))
-	app.Post("/", createProduct(service))
-	app.Patch("/:id", updateProduct(service))
-	app.Delete("/:id", deleteProduct(service))
+	app.Get("/:id", Protect(serveAuth), getProduct(service))
+	app.Post("/", Protect(serveAuth), createProduct(service))
+	app.Patch("/:id", Protect(serveAuth), updateProduct(service))
+	app.Delete("/:id", Protect(serveAuth), deleteProduct(service))
 }
 
 func getProducts(srv products.RepoServiceProducts) fiber.Handler {

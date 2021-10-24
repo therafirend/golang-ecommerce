@@ -3,16 +3,33 @@ package routes
 import (
 	"github.com/gofiber/fiber/v2"
 	"golang-ecommerce-practice/package/entities"
+	"golang-ecommerce-practice/package/products"
 	"golang-ecommerce-practice/package/users"
 	"golang-ecommerce-practice/zapLog"
 )
 
-func UserRouter(app fiber.Router, service users.RepoServiceUsers) {
+func UserRouter(app fiber.Router, service users.RepoServiceUsers, srvProd products.RepoServiceProducts) {
 	app.Get("/", getUsers(service))
 	app.Get("/:id", getUser(service))
+	app.Get("/:id/products", getUserProduct(srvProd))
 	app.Post("/", createUser(service))
 	app.Patch("/:id", updateUser(service))
 	app.Delete("/:id", deleteUser(service))
+}
+
+func getUserProduct(srv products.RepoServiceProducts) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		fetchData, err := srv.GetProducts(&map[string]interface{}{
+			"id_seller": c.Params("id"),
+		})
+		if err != nil {
+			return c.Status(err.Code).JSON(fiber.Map{
+				"message": err.GetMsg().Message + " Data User",
+			})
+		}
+		return c.Status(200).JSON(&fetchData)
+
+	}
 }
 
 func getUsers(srv users.RepoServiceUsers) fiber.Handler {

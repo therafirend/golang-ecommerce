@@ -78,7 +78,7 @@ func (rp repoDb) Create(products *entities.CreateProducts) (*entities.CreateProd
 		zapLog.Error("Error Sql" + err.Error())
 
 		if strings.Contains(err.Error(), "Duplicate Entry") {
-			return nil, errs.NewAppError("Username Already Exist", http.StatusBadRequest)
+			return nil, errs.NewAppError("Product Already Exist", http.StatusBadRequest)
 		}
 
 		return nil, errs.NewAppError("Internal server error", http.StatusInternalServerError)

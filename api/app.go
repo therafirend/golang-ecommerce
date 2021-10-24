@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"golang-ecommerce-practice/api/routes"
+	"golang-ecommerce-practice/package/auth"
 	"golang-ecommerce-practice/package/products"
 	"golang-ecommerce-practice/package/users"
 	"golang-ecommerce-practice/zapLog"
@@ -33,7 +34,10 @@ func ConnectionDB() (*sqlx.DB, error) {
 }
 func main() {
 	//use godotenv if not using docker
-	godotenv.Load(".config")
+	err := godotenv.Load(".config")
+	if err != nil {
+		return
+	}
 
 	db, err := ConnectionDB()
 	if err != nil {
@@ -42,6 +46,7 @@ func main() {
 	fmt.Println("Database Connection Success")
 	usersRepository := users.NewRepoDB(db)
 	usersService := users.NewService(usersRepository)
+	authService := auth.NewService(usersRepository)
 	productsRepository := products.NewRepoDB(db)
 	productsService := products.NewService(productsRepository)
 	app := fiber.New()
@@ -49,8 +54,9 @@ func main() {
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Send([]byte("Welcome to Api!"))
 	})
-	routes.UserRouter(app.Group("/api/v1/users"), usersService)
-	routes.ProductRouter(app.Group("/api/v1/products"), productsService)
+	routes.UserRouter(app.Group("/api/v1/users"), usersService, productsService)
+	routes.ProductRouter(app.Group("/api/v1/products"), productsService, authService)
+	routes.AuthRouter(app.Group("/api/v1/auth"), authService)
 
 	log.Fatal(app.Listen(":" + os.Getenv("APP_PORT")))
 
