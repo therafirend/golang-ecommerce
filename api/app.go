@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"golang-ecommerce-practice/api/routes"
+	"golang-ecommerce-practice/package/products"
 	"golang-ecommerce-practice/package/users"
 	"golang-ecommerce-practice/zapLog"
 	"log"
@@ -41,12 +42,15 @@ func main() {
 	fmt.Println("Database Connection Success")
 	usersRepository := users.NewRepoDB(db)
 	usersService := users.NewService(usersRepository)
+	productsRepository := products.NewRepoDB(db)
+	productsService := products.NewService(productsRepository)
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Send([]byte("Welcome to Api!"))
 	})
 	routes.UserRouter(app.Group("/api/v1/users"), usersService)
+	routes.ProductRouter(app.Group("/api/v1/products"), productsService)
 
 	log.Fatal(app.Listen(":" + os.Getenv("APP_PORT")))
 
